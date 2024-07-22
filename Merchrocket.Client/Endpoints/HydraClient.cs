@@ -38,7 +38,7 @@ public class HydraClient(MerchrocketConfig config, ILogger<HydraClient> logger) 
     {
         using var client = GetClient();
 
-        var url = Path.Combine(config.BaseUrl, path);
+        var url = Path.Combine(config.BaseUrl.TrimEnd('/'), path.TrimStart('/'));
 
         try
         {

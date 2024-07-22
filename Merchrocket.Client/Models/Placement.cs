@@ -12,4 +12,7 @@ public class Placement
 
     [JsonPropertyName("area")]
     public Area? Area { get; set; }
+    
+    [JsonPropertyName("layers")]
+    public List<Layer>? Layers { get; set; }
 }
