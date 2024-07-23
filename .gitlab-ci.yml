@@ -1,6 +1,6 @@
 variables:
   PROJECT_NAME: "Merchrocket.Client"
-  PROJECT_PATH: "pandaliebe/nuget/merchrocket-client.git"
+  PROJECT_PATH: "panda-public/merchrocket-client.git"
 
 stages:
   - build
