@@ -8,7 +8,11 @@ namespace Merchrocket.Client.Endpoints;
 
 public interface IHydraClient
 {
-    Task<HydraCollection<T>> GetCollectionAsync<T>(string path, int page = 1, int itemsPerPage = 30)
+    Task<HydraCollection<T>> GetCollectionAsync<T>(
+        string path,
+        int page = 1,
+        int itemsPerPage = 30,
+        Dictionary<string, string>? queryParams = null)
         where T : HydraMember;
 
     Task<T> GetAsync<T>(string path) where T : HydraMember;
@@ -18,10 +22,30 @@ public interface IHydraClient
 
 public class HydraClient(MerchrocketConfig config, ILogger<HydraClient> logger) : IHydraClient
 {
-    public async Task<HydraCollection<T>> GetCollectionAsync<T>(string path, int page = 1, int itemsPerPage = 30)
+    public async Task<HydraCollection<T>> GetCollectionAsync<T>(
+        string path,
+        int page = 1,
+        int itemsPerPage = 30,
+        Dictionary<string, string>? queryParams = null)
         where T : HydraMember
     {
-        return await SendRequestAsync<HydraCollection<T>>(HttpMethod.Get, $"{path}?page={page}&itemsPerPage={itemsPerPage}");
+        var internalQueryParams = new Dictionary<string, string>
+        {
+            { "page", page.ToString() }, 
+            { "itemsPerPage", itemsPerPage.ToString() }
+        };
+        
+        if (queryParams != null)
+        {
+            foreach (var (key, value) in queryParams)
+            {
+                internalQueryParams[key] = value;
+            }
+        }
+        
+        var queryString = string.Join("&", internalQueryParams.Select(kvp => $"{kvp.Key}={kvp.Value}"));
+
+        return await SendRequestAsync<HydraCollection<T>>(HttpMethod.Get, $"{path}?{queryString}");
     }
 
     public async Task<T> GetAsync<T>(string path) where T : HydraMember
@@ -29,7 +53,8 @@ public class HydraClient(MerchrocketConfig config, ILogger<HydraClient> logger) 
         return await SendRequestAsync<T>(HttpMethod.Get, path);
     }
 
-    public async Task<TResponse> PostAsync<TResponse, TRequest>(string path, TRequest request) where TResponse: HydraMember
+    public async Task<TResponse> PostAsync<TResponse, TRequest>(string path, TRequest request)
+        where TResponse : HydraMember
     {
         return await SendRequestAsync<TResponse>(HttpMethod.Post, path, JsonContent.Create(request));
     }
