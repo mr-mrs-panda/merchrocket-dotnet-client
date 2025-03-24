@@ -5,14 +5,14 @@ namespace Merchrocket.Client.Models;
 public class Section
 {
     [JsonPropertyName("top")]
-    public int Top { get; set; }
+    public double Top { get; set; }
 
     [JsonPropertyName("right")]
-    public int Right { get; set; }
+    public double Right { get; set; }
 
     [JsonPropertyName("bottom")]
-    public int Bottom { get; set; }
+    public double Bottom { get; set; }
 
     [JsonPropertyName("left")]
-    public int Left { get; set; }
+    public double Left { get; set; }
 }
