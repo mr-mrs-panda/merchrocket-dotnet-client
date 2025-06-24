@@ -17,15 +17,15 @@ dotnet_build:
 dotnet_deploy:
   image: mcr.microsoft.com/dotnet/sdk:8.0
   stage: deploy
-  before_script:
-    - dotnet nuget add source "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/nuget/index.json" --name gitlabci --username gitlab-ci-token --password $CI_JOB_TOKEN --store-password-in-clear-text
   script:
     - export FULL_VERSION=$(cat version.txt)
     - echo "Deploying version $FULL_VERSION"
     - dotnet pack -c Release -o Packages -p:PackageVersion=$FULL_VERSION $PROJECT_NAME
-    - dotnet nuget push "Packages/*.nupkg" --source gitlabci
+    - dotnet nuget push "Packages/*.nupkg" --api-key $NUGET_ORG_API_KEY --source https://api.nuget.org/v3/index.json
   only:
     - main
+  variables:
+    NUGET_ORG_API_KEY: ${NUGET_ORG_API_KEY}
 
 bump_version:
   image: debian:latest
