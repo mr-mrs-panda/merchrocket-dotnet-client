@@ -8,8 +8,8 @@
         <Authors>Mr. &amp; Mrs. Panda</Authors>
         <Company>Mr. &amp; Mrs. Panda</Company>
         <Description>A comprehensive library for interacting with the Merchrocket API</Description>
-        <PackageProjectUrl>https://gitlab.com/panda-public/merchrocket-client</PackageProjectUrl>
-        <RepositoryUrl>https://gitlab.com/panda-public/merchrocket-client.git</RepositoryUrl>
+        <PackageProjectUrl>https://github.com/mr-mrs-panda/merchrocket-dotnet-client</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/mr-mrs-panda/merchrocket-dotnet-client.git</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
         <PackageTags>merchrocket;api;client;mockup</PackageTags>
         <PackageReadmeFile>README.md</PackageReadmeFile>
