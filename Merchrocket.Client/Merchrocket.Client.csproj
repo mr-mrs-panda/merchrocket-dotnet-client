@@ -1,24 +1,42 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+        <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+
+        <!-- NuGet package metadata -->
+        <Version>1.0.0</Version>
         <PackageId>Merchrocket.Client</PackageId>
         <Authors>Mr. &amp; Mrs. Panda</Authors>
         <Company>Mr. &amp; Mrs. Panda</Company>
-        <Description>A comprehensive library for interacting with the Merchrocket API</Description>
+        <Description>A comprehensive, strongly-typed .NET client library for the Merchrocket print-on-demand API.</Description>
         <PackageProjectUrl>https://github.com/mr-mrs-panda/merchrocket-dotnet-client</PackageProjectUrl>
         <RepositoryUrl>https://github.com/mr-mrs-panda/merchrocket-dotnet-client.git</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
-        <PackageTags>merchrocket;api;client;mockup</PackageTags>
+        <PackageTags>merchrocket;api;client;mockup;print-on-demand</PackageTags>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
+
+        <!-- Generate XML documentation for IntelliSense -->
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <NoWarn>$(NoWarn);CS1591</NoWarn>
+
+        <!-- Source Link for debugging -->
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+        <EmbedUntrackedSources>true</EmbedUntrackedSources>
+        <IncludeSymbols>true</IncludeSymbols>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.10" />
-        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.10" />
+        <None Include="../readme.md" Pack="true" PackagePath="README.md" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.7" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.7" />
+        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
     </ItemGroup>
 
 </Project>
