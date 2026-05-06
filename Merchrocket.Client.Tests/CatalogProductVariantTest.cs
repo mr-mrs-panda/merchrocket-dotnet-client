@@ -15,9 +15,10 @@ public class CatalogProductVariantTest : ATestBase
 
         // Assert
         Assert.NotNull(res);
-        Assert.NotEmpty(res.Members!);
+        Assert.NotNull(res.Data);
+        Assert.NotEmpty(res.Data.Members!);
         
-        var firstVariant = res.Members!.First();
+        var firstVariant = res.Data.Members!.First();
         Assert.NotNull(firstVariant);
 
         var supplierSku = firstVariant.TryGetAttributeValue<int?>(AttributeCodes.SupplierSku);
