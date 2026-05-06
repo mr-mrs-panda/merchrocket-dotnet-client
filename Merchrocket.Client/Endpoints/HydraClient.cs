@@ -1,5 +1,6 @@
 using System.Net.Http.Json;
 using Merchrocket.Client.Exceptions;
+using Merchrocket.Client.Models;
 using Merchrocket.Client.Models.Config;
 using Merchrocket.Client.Models.Hydra;
 using Microsoft.Extensions.Logging;
@@ -8,21 +9,22 @@ namespace Merchrocket.Client.Endpoints;
 
 public interface IHydraClient
 {
-    Task<HydraCollection<T>> GetCollectionAsync<T>(
+    Task<ApiResponse<HydraCollection<T>>> GetCollectionAsync<T>(
         string path,
         int page = 1,
         int itemsPerPage = 30,
         Dictionary<string, string>? queryParams = null)
         where T : HydraMember;
 
-    Task<T> GetAsync<T>(string path) where T : HydraMember;
+    Task<ApiResponse<T>> GetAsync<T>(string path) where T : HydraMember;
 
-    Task<TResponse> PostAsync<TResponse, TRequest>(string path, TRequest request) where TResponse : HydraMember;
+    Task<ApiResponse<TResponse>> PostAsync<TResponse, TRequest>(string path, TRequest request)
+        where TResponse : HydraMember;
 }
 
 public class HydraClient(MerchrocketConfig config, ILogger<HydraClient> logger) : IHydraClient
 {
-    public async Task<HydraCollection<T>> GetCollectionAsync<T>(
+    public async Task<ApiResponse<HydraCollection<T>>> GetCollectionAsync<T>(
         string path,
         int page = 1,
         int itemsPerPage = 30,
@@ -48,18 +50,19 @@ public class HydraClient(MerchrocketConfig config, ILogger<HydraClient> logger) 
         return await SendRequestAsync<HydraCollection<T>>(HttpMethod.Get, $"{path}?{queryString}");
     }
 
-    public async Task<T> GetAsync<T>(string path) where T : HydraMember
+    public async Task<ApiResponse<T>> GetAsync<T>(string path) where T : HydraMember
     {
         return await SendRequestAsync<T>(HttpMethod.Get, path);
     }
 
-    public async Task<TResponse> PostAsync<TResponse, TRequest>(string path, TRequest request)
+    public async Task<ApiResponse<TResponse>> PostAsync<TResponse, TRequest>(string path, TRequest request)
         where TResponse : HydraMember
     {
         return await SendRequestAsync<TResponse>(HttpMethod.Post, path, JsonContent.Create(request));
     }
 
-    private async Task<T> SendRequestAsync<T>(HttpMethod method, string path, HttpContent? content = null)
+    private async Task<ApiResponse<T>> SendRequestAsync<T>(
+        HttpMethod method, string path, HttpContent? content = null)
     {
         using var client = GetClient();
 
@@ -79,12 +82,39 @@ public class HydraClient(MerchrocketConfig config, ILogger<HydraClient> logger) 
             response.EnsureSuccessStatusCode();
 
             var responseData = await response.Content.ReadFromJsonAsync<T>();
-            return responseData ?? throw new MerchrocketApiException("Can't parse responseData");
+            if (responseData == null)
+            {
+                throw new MerchrocketApiException("Can't parse responseData");
+            }
+
+            var creditInfo = ExtractCreditInfo(response);
+
+            return new ApiResponse<T> { Data = responseData, Credits = creditInfo };
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not MerchrocketApiException)
         {
             throw new MerchrocketApiException($"Error while making {method} request to {url}", ex);
         }
+    }
+
+    private static CreditInfo? ExtractCreditInfo(HttpResponseMessage response)
+    {
+        response.Headers.TryGetValues("X-MR-Credits-Included", out var includedValues);
+        response.Headers.TryGetValues("X-MR-Credits-Used", out var usedValues);
+
+        var included = includedValues?.FirstOrDefault();
+        var used = usedValues?.FirstOrDefault();
+
+        if (included == null && used == null)
+        {
+            return null;
+        }
+
+        return new CreditInfo
+        {
+            CreditsIncluded = int.TryParse(included, out var i) ? i : null,
+            CreditsUsed = int.TryParse(used, out var u) ? u : null
+        };
     }
 
     private async Task LogResponseAsync(HttpResponseMessage response)
