@@ -38,21 +38,29 @@ public class MockupTaskTest : ATestBase
         };
 
         // Act
-        var res = await Client.MockupTask.PostMockupTask(request);
+        var response = await Client.MockupTask.PostMockupTask(request);
 
         // Assert
-        Assert.NotNull(res);
-        Assert.NotNull(res.MockupTaskId);
+        Assert.NotNull(response);
+        Assert.NotNull(response.Data);
+        Assert.NotNull(response.Data.MockupTaskId);
 
-        var mockupTaskId = res.MockupTaskId;
+        var mockupTaskId = response.Data.MockupTaskId;
 
-        while (res.Status == "pending")
+        while (response.Data.Status == "pending")
         {
             await Task.Delay(TimeSpan.FromSeconds(5));
-            res = await Client.MockupTask.GetMockupTask(mockupTaskId);
+            response = await Client.MockupTask.GetMockupTask(mockupTaskId);
         }
 
-        Assert.NotNull(res.CatalogVariantMockups);
-        Assert.Contains(res.CatalogVariantMockups, x => x.Mockups?.Any(m => m.MockupUrl != null) == true);
+        Assert.NotNull(response.Data.CatalogVariantMockups);
+        Assert.Contains(response.Data.CatalogVariantMockups, x => x.Mockups?.Any(m => m.MockupUrl != null) == true);
+
+        // Verify credit information is present (mockup tasks always return credit headers)
+        Assert.NotNull(response.Credits);
+        Assert.NotNull(response.Credits.CreditsIncluded);
+        Assert.NotNull(response.Credits.CreditsUsed);
+        Assert.True(response.Credits.CreditsIncluded > 0);
+        Assert.True(response.Credits.CreditsUsed > 0);
     }
 }

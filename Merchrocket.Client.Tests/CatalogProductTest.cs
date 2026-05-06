@@ -13,6 +13,7 @@ public class CatalogProductTest: ATestBase
 
         // Assert
         Assert.NotNull(res);
-        Assert.NotEmpty(res.Members!);
+        Assert.NotNull(res.Data);
+        Assert.NotEmpty(res.Data.Members!);
     }
 }
