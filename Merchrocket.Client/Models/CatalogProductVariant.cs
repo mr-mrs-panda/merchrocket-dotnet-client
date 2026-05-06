@@ -15,6 +15,14 @@ public class CatalogProductVariant : HydraMember
 
     [JsonPropertyName("placements")] public List<Placement>? Placements { get; set; }
 
+    [JsonPropertyName("inStock")] public bool InStock { get; set; }
+
+    /// <summary>
+    /// Detailed product option definitions with available values, labels, and preview images.
+    /// </summary>
+    [JsonPropertyName("options")]
+    public List<ProductOptionDefinition>? Options { get; set; }
+
     [JsonPropertyName("attributes")] public List<Attribute>? Attributes { get; set; }
 
     public T? TryGetAttributeValue<T>(string code)

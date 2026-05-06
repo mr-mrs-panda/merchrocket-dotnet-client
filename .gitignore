@@ -9,3 +9,5 @@ riderModule.iml
 *.runsettings
 
 .DS_Store
+
+/api-docs/

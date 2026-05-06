@@ -15,6 +15,9 @@ public static class ServiceCollectionExtensions
             .AddScoped<IMerchrocketClient, MerchrocketClient>()
             .AddScoped<ICatalogProductEndpoint, CatalogProductEndpoint>()
             .AddScoped<ICatalogProductVariantEndpoint, CatalogProductVariantEndpoint>()
-            .AddScoped<IMockupTaskEndpoint, MockupTaskEndpoint>();
+            .AddScoped<IMockupTaskEndpoint, MockupTaskEndpoint>()
+            .AddScoped<IOrderEndpoint, OrderEndpoint>()
+            .AddScoped<IStatisticsEndpoint, StatisticsEndpoint>()
+            .AddScoped<IUserEndpoint, UserEndpoint>();
     }
 }

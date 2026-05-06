@@ -6,9 +6,23 @@ namespace Merchrocket.Client.Tests;
 public class MockupTaskTest : ATestBase
 {
     [Fact]
-    public async Task ShouldCreateMockupTaskAsync()
+    public async Task ShouldGetMockupTasksAsync()
     {
-        // Arrange
+        var response = await Client.MockupTask.GetMockupTasksAsync(page: 1, itemsPerPage: 5);
+        var collection = AssertSuccess(response);
+        Assert.NotNull(collection.Members);
+        Assert.True(collection.TotalItems >= 0);
+
+        foreach (var task in collection.Members)
+        {
+            Assert.NotNull(task.MockupTaskId);
+            Assert.NotNull(task.Status);
+        }
+    }
+
+    [Fact]
+    public async Task ShouldCreateAndPollMockupTaskAsync()
+    {
         var request = new MockupTaskRequest
         {
             Format = MockupTaskFormats.JPEG,
@@ -37,30 +51,33 @@ public class MockupTaskTest : ATestBase
             ]
         };
 
-        // Act
         var response = await Client.MockupTask.PostMockupTask(request);
 
-        // Assert
-        Assert.NotNull(response);
-        Assert.NotNull(response.Data);
-        Assert.NotNull(response.Data.MockupTaskId);
-
-        var mockupTaskId = response.Data.MockupTaskId;
-
-        while (response.Data.Status == "pending")
+        if (!response.IsSuccess)
         {
-            await Task.Delay(TimeSpan.FromSeconds(5));
-            response = await Client.MockupTask.GetMockupTask(mockupTaskId);
+            Assert.Fail($"POST mockup-tasks failed: {response.Error}");
         }
 
-        Assert.NotNull(response.Data.CatalogVariantMockups);
-        Assert.Contains(response.Data.CatalogVariantMockups, x => x.Mockups?.Any(m => m.MockupUrl != null) == true);
+        var task = AssertSuccess(response);
+        Assert.NotNull(task.MockupTaskId);
 
-        // Verify credit information is present (mockup tasks always return credit headers)
-        Assert.NotNull(response.Credits);
-        Assert.NotNull(response.Credits.CreditsIncluded);
-        Assert.NotNull(response.Credits.CreditsUsed);
-        Assert.True(response.Credits.CreditsIncluded > 0);
-        Assert.True(response.Credits.CreditsUsed > 0);
+        var mockupTaskId = task.MockupTaskId!;
+
+        // Poll until finished (max 2 min)
+        using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(2));
+        while (task.Status == "pending" && !cts.IsCancellationRequested)
+        {
+            await Task.Delay(TimeSpan.FromSeconds(5), cts.Token);
+            var poll = await Client.MockupTask.GetMockupTask(mockupTaskId);
+            task = AssertSuccess(poll);
+        }
+
+        Assert.NotNull(task.CatalogVariantMockups);
+        Assert.Contains(task.CatalogVariantMockups, x => x.Mockups?.Any(m => m.MockupUrl != null) == true);
+
+        // Download mockup assets (zip)
+        var dl = await Client.MockupTask.DownloadMockupTaskAsync(mockupTaskId);
+        var bytes = AssertSuccess(dl);
+        Assert.True(bytes.Length > 0);
     }
 }

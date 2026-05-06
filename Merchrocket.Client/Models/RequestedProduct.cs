@@ -18,4 +18,11 @@ public class RequestedProduct
 
     [JsonPropertyName("placements")]
     public List<Placement>? Placements { get; set; }
+
+    /// <summary>
+    /// Options that must be specified for products with variants requiring them (e.g. dial_color).
+    /// Always serialized as array (never null).
+    /// </summary>
+    [JsonPropertyName("options")]
+    public List<Option> Options { get; set; } = [];
 }
