@@ -15,12 +15,15 @@ public abstract class ATestBase
         {
             throw new Exception("MR_ACCESS_TOKEN environment variable is not set.");
         }
+
+        var baseUrl = Environment.GetEnvironmentVariable("MR_BASE_URL")
+                      ?? "https://staging.merchrocket.shop/api/";
         
         var serviceCollection = new ServiceCollection();
         serviceCollection.AddLogging();
         serviceCollection.AddMerchrocketClient(new MerchrocketConfig
         {
-            BaseUrl = "https://staging.merchrocket.shop/api/",
+            BaseUrl = baseUrl,
             AccessToken = accessToken,
             RequestLogging = true
         });
