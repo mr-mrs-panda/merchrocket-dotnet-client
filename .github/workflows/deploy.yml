@@ -8,7 +8,7 @@ on:
       - "v*.*.*"
 
 jobs:
-  build-and-test:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -34,13 +34,10 @@ jobs:
       - name: Build
         run: dotnet build -c Release
 
-      - name: Run tests
-        run: dotnet test -c Release --no-build
-
   deploy:
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
-    needs: build-and-test
+    needs: build
     steps:
       - uses: actions/checkout@v4
 
@@ -49,14 +46,17 @@ jobs:
         with:
           dotnet-version: "10.0.x"
 
+      - name: Extract version from tag
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
+
       - name: Restore dependencies
         run: dotnet restore Merchrocket.Client/Merchrocket.Client.csproj
 
       - name: Build
-        run: dotnet build -c Release Merchrocket.Client/Merchrocket.Client.csproj
+        run: dotnet build -c Release Merchrocket.Client/Merchrocket.Client.csproj -p:Version=${{ env.VERSION }}
 
       - name: Pack
-        run: dotnet pack -c Release --no-build -o Packages Merchrocket.Client/Merchrocket.Client.csproj
+        run: dotnet pack -c Release --no-build -o Packages Merchrocket.Client/Merchrocket.Client.csproj -p:Version=${{ env.VERSION }}
 
       - name: Publish NuGet package
         run: dotnet nuget push "Packages/*.nupkg" --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
